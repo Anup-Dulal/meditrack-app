@@ -3,13 +3,18 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 export interface Medicine {
   id: string
   name: string
-  genericName: string
-  manufacturer: string
+  genericName?: string
+  manufacturer?: string
+  batchNumber?: string
   quantity: number
   purchasePrice: number
   sellingPrice: number
-  expiryDate: string
+  expiryDate?: string
   minimumStock: number
+  barcode?: string
+  description?: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface MedicineState {
