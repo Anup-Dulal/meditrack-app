@@ -56,18 +56,30 @@ class WebDatabase implements Database {
   private SQL: any = null
 
   async init() {
-    const initSqlJs = (await import('sql.js')).default
-    this.SQL = await initSqlJs()
+    try {
+      const initSqlJs = (await import('sql.js')).default
+      this.SQL = await initSqlJs({
+        locateFile: (file: string) => `https://sql.js.org/dist/${file}`
+      })
 
-    const savedDb = localStorage.getItem('meditrack_db')
-    if (savedDb) {
-      const buffer = new Uint8Array(JSON.parse(savedDb))
-      this.db = new this.SQL.Database(buffer)
-    } else {
-      this.db = new this.SQL.Database()
+      const savedDb = localStorage.getItem('meditrack_db')
+      if (savedDb) {
+        try {
+          const buffer = new Uint8Array(JSON.parse(savedDb))
+          this.db = new this.SQL.Database(buffer)
+        } catch (e) {
+          console.warn('Failed to load saved database, creating new one')
+          this.db = new this.SQL.Database()
+        }
+      } else {
+        this.db = new this.SQL.Database()
+      }
+
+      await this.createTables()
+    } catch (error) {
+      console.error('Failed to initialize sql.js:', error)
+      throw error
     }
-
-    await this.createTables()
   }
 
   private async createTables() {
@@ -170,12 +182,22 @@ class WebDatabase implements Database {
       )`,
     ]
 
-    for (const sql of tables) {
-      this.db.run(sql)
-    }
+    try {
+      for (const sql of tables) {
+        try {
+          this.db.run(sql)
+        } catch (e) {
+          // Table might already exist, continue
+          console.debug('Table creation note:', e)
+        }
+      }
 
-    await this.initializeDefaultRoles()
-    this.save()
+      await this.initializeDefaultRoles()
+      this.save()
+    } catch (error) {
+      console.error('Failed to create tables:', error)
+      throw error
+    }
   }
 
   private async initializeDefaultRoles() {
