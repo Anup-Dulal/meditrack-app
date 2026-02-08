@@ -3,9 +3,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../store'
 import { setTransactions, setFilter } from '../store/slices/transactionSlice'
 import { TransactionService } from '../services/transactionService'
+import { MedicineService } from '../services/medicineService'
 import Button from '../components/Common/Button'
 import Input from '../components/Common/Input'
 import Loading from '../components/Common/Loading'
+import Modal from '../components/Common/Modal'
 import toast from 'react-hot-toast'
 
 export default function Transactions() {
@@ -15,6 +17,8 @@ export default function Transactions() {
   const [isLoading, setIsLoading] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   // Load transactions on mount
   useEffect(() => {
@@ -89,6 +93,15 @@ export default function Transactions() {
   }
 
   const filteredTransactions = transactions.filter((t) => filter.type === 'all' || t.type === filter.type)
+
+  const handleViewDetails = (transaction: any) => {
+    const medicine = MedicineService.getMedicineById(transaction.medicineId)
+    setSelectedTransaction({
+      ...transaction,
+      medicineDetails: medicine,
+    })
+    setIsDetailOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -170,6 +183,7 @@ export default function Transactions() {
                   <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Total</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Payment</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,6 +218,14 @@ export default function Transactions() {
                     <td className="px-6 py-4 text-sm text-gray-900 capitalize">
                       {transaction.paymentMethod}
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleViewDetails(transaction)}
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -233,6 +255,98 @@ export default function Transactions() {
           </div>
         </div>
       )}
+
+      {/* Transaction Details Modal */}
+      <Modal
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false)
+          setSelectedTransaction(null)
+        }}
+        title="Transaction Details"
+      >
+        {selectedTransaction && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Transaction ID</p>
+                <p className="font-semibold">{selectedTransaction.id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Date</p>
+                <p className="font-semibold">{new Date(selectedTransaction.date).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Type</p>
+                <p className="font-semibold capitalize">{selectedTransaction.type}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Payment Method</p>
+                <p className="font-semibold capitalize">{selectedTransaction.paymentMethod}</p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-bold mb-3">Medicine Information</h3>
+              <div className="space-y-2 bg-gray-50 p-4 rounded">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Name:</span>
+                  <span className="font-semibold">{selectedTransaction.medicineName}</span>
+                </div>
+                {selectedTransaction.medicineDetails && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Generic Name:</span>
+                      <span className="font-semibold">{selectedTransaction.medicineDetails.genericName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Manufacturer:</span>
+                      <span className="font-semibold">{selectedTransaction.medicineDetails.manufacturer}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Batch Number:</span>
+                      <span className="font-semibold">{selectedTransaction.medicineDetails.batchNumber || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Expiry Date:</span>
+                      <span className="font-semibold">{selectedTransaction.medicineDetails.expiryDate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Barcode:</span>
+                      <span className="font-semibold">{selectedTransaction.medicineDetails.barcode || 'N/A'}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-bold mb-3">Transaction Details</h3>
+              <div className="space-y-2 bg-gray-50 p-4 rounded">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Quantity:</span>
+                  <span className="font-semibold">{selectedTransaction.quantity} units</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Unit Price:</span>
+                  <span className="font-semibold">₹{selectedTransaction.unitPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-lg border-t pt-2">
+                  <span className="text-gray-600 font-bold">Total Amount:</span>
+                  <span className="font-bold text-green-600">₹{selectedTransaction.totalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {selectedTransaction.notes && (
+              <div className="border-t pt-4">
+                <p className="text-sm text-gray-600">Notes</p>
+                <p className="text-sm">{selectedTransaction.notes}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
