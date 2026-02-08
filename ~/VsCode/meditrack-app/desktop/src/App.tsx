@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Sales from './pages/Sales'
 import Transactions from './pages/Transactions'
+import Reports from './pages/Reports'
+import Customers from './pages/Customers'
 import AdminDashboard from './pages/Admin/Dashboard'
 import AdminUsers from './pages/Admin/Users'
 import AdminSettings from './pages/Admin/Settings'
@@ -34,6 +36,8 @@ function App() {
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/sales" element={<Sales />} />
                   <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/customers" element={<Customers />} />
 
                   {/* Admin Routes - Only accessible to Admin role */}
                   {user?.role === 'Admin' && (
