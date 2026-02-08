@@ -8,18 +8,6 @@ import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Sales from './pages/Sales'
 import Transactions from './pages/Transactions'
-import './App.css'
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { RootState } from './store'
-import MainLayout from './components/Layout/MainLayout'
-import ProtectedRoute from './components/Auth/ProtectedRoute'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Inventory from './pages/Inventory'
-import Sales from './pages/Sales'
-import Transactions from './pages/Transactions'
 import AdminDashboard from './pages/Admin/Dashboard'
 import AdminUsers from './pages/Admin/Users'
 import AdminSettings from './pages/Admin/Settings'
@@ -67,7 +55,5 @@ function App() {
     </Router>
   )
 }
-
-export default App
 
 export default App

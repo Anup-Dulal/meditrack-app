@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "sql.js": "^1.13.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.0"
+  }
+}
