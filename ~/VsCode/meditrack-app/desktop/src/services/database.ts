@@ -1,5 +1,4 @@
 // Database abstraction layer that works for web and native platforms
-import { invoke } from '@tauri-apps/api/tauri'
 
 export interface DatabaseStatement {
   run(...params: any[]): { changes: number }
@@ -15,28 +14,32 @@ export interface Database {
 }
 
 class TauriDatabase implements Database {
+  private invoke: any
+
   async init() {
+    const { invoke } = await import('@tauri-apps/api/tauri')
+    this.invoke = invoke
     await invoke('init_database')
   }
 
   prepare(sql: string): DatabaseStatement {
     return {
       run: (...params: any[]) => {
-        return invoke('db_run', { sql, params }).then((result: any) => ({
+        return this.invoke('db_run', { sql, params }).then((result: any) => ({
           changes: result.changes || 1,
         }))
       },
       get: (...params: any[]) => {
-        return invoke('db_get', { sql, params })
+        return this.invoke('db_get', { sql, params })
       },
       all: (...params: any[]) => {
-        return invoke('db_all', { sql, params })
+        return this.invoke('db_all', { sql, params })
       },
     }
   }
 
   exec(sql: string) {
-    return invoke('db_exec', { sql })
+    return this.invoke('db_exec', { sql })
   }
 
   pragma(pragma: string) {
@@ -44,7 +47,7 @@ class TauriDatabase implements Database {
   }
 
   close() {
-    return invoke('db_close')
+    return this.invoke('db_close')
   }
 }
 

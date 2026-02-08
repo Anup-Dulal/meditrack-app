@@ -16,5 +16,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      external: ['@tauri-apps/api', '@tauri-apps/api/tauri', 'sql.js'],
+    },
   },
 })
