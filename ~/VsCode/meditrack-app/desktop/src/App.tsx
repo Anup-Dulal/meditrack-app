@@ -10,8 +10,24 @@ import Sales from './pages/Sales'
 import Transactions from './pages/Transactions'
 import './App.css'
 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { RootState } from './store'
+import MainLayout from './components/Layout/MainLayout'
+import ProtectedRoute from './components/Auth/ProtectedRoute'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Inventory from './pages/Inventory'
+import Sales from './pages/Sales'
+import Transactions from './pages/Transactions'
+import AdminDashboard from './pages/Admin/Dashboard'
+import AdminUsers from './pages/Admin/Users'
+import AdminSettings from './pages/Admin/Settings'
+import AdminAuditLogs from './pages/Admin/AuditLogs'
+import './App.css'
+
 function App() {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
 
   return (
     <Router>
@@ -30,6 +46,16 @@ function App() {
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/sales" element={<Sales />} />
                   <Route path="/transactions" element={<Transactions />} />
+
+                  {/* Admin Routes - Only accessible to Admin role */}
+                  {user?.role === 'Admin' && (
+                    <>
+                      <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/admin/users" element={<AdminUsers />} />
+                      <Route path="/admin/settings" element={<AdminSettings />} />
+                      <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                    </>
+                  )}
                 </Routes>
               </MainLayout>
             ) : (
@@ -41,5 +67,7 @@ function App() {
     </Router>
   )
 }
+
+export default App
 
 export default App

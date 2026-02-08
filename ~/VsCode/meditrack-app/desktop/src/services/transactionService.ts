@@ -1,9 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
 import { getDatabase } from './database'
+import { AuditService } from './auditService'
 import { Transaction } from '../store/slices/transactionSlice'
 
 export class TransactionService {
-  static recordTransaction(transaction: Omit<Transaction, 'id'>): Transaction {
+  static recordTransaction(transaction: Omit<Transaction, 'id'>, userId?: string): Transaction {
     const db = getDatabase()
     const id = uuidv4()
 
@@ -26,6 +27,17 @@ export class TransactionService {
       transaction.paymentMethod,
       transaction.notes || null
     )
+
+    // Log audit action
+    if (userId) {
+      AuditService.logAction(userId, 'CREATE', 'Transaction', id, {
+        type: transaction.type,
+        medicineName: transaction.medicineName,
+        quantity: transaction.quantity,
+        totalPrice: transaction.totalPrice,
+        paymentMethod: transaction.paymentMethod,
+      })
+    }
 
     return {
       ...transaction,
@@ -65,10 +77,21 @@ export class TransactionService {
     return stmt.all(type) as Transaction[]
   }
 
-  static deleteTransaction(id: string): void {
+  static deleteTransaction(id: string, userId?: string): void {
     const db = getDatabase()
+    const transaction = this.getTransactionById(id)
+
     const stmt = db.prepare('DELETE FROM transactions WHERE id = ?')
     stmt.run(id)
+
+    // Log audit action
+    if (userId && transaction) {
+      AuditService.logAction(userId, 'DELETE', 'Transaction', id, {
+        type: transaction.type,
+        medicineName: transaction.medicineName,
+        totalPrice: transaction.totalPrice,
+      })
+    }
   }
 
   static calculateDailySales(date: string): number {

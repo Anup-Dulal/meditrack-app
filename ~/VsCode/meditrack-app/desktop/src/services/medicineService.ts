@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { getDatabase } from './database'
+import { AuditService } from './auditService'
 
 export interface Medicine {
   id: string
@@ -19,7 +20,7 @@ export interface Medicine {
 }
 
 export class MedicineService {
-  static addMedicine(medicine: Omit<Medicine, 'id' | 'createdAt' | 'updatedAt'>): Medicine {
+  static addMedicine(medicine: Omit<Medicine, 'id' | 'createdAt' | 'updatedAt'>, userId?: string): Medicine {
     const db = getDatabase()
     const id = uuidv4()
     const now = new Date().toISOString()
@@ -48,6 +49,15 @@ export class MedicineService {
       now,
       now
     )
+
+    // Log audit action
+    if (userId) {
+      AuditService.logAction(userId, 'CREATE', 'Medicine', id, {
+        name: medicine.name,
+        quantity: medicine.quantity,
+        sellingPrice: medicine.sellingPrice,
+      })
+    }
 
     return {
       ...medicine,
@@ -80,7 +90,7 @@ export class MedicineService {
     return stmt.all(searchTerm, searchTerm, searchTerm) as Medicine[]
   }
 
-  static updateMedicine(id: string, updates: Partial<Medicine>): Medicine {
+  static updateMedicine(id: string, updates: Partial<Medicine>, userId?: string): Medicine {
     const db = getDatabase()
     const now = new Date().toISOString()
 
@@ -115,22 +125,48 @@ export class MedicineService {
       id
     )
 
+    // Log audit action
+    if (userId) {
+      const changes: Record<string, any> = {}
+      Object.keys(updates).forEach((key) => {
+        if (updates[key as keyof Medicine] !== medicine[key as keyof Medicine]) {
+          changes[key] = {
+            old: medicine[key as keyof Medicine],
+            new: updates[key as keyof Medicine],
+          }
+        }
+      })
+      if (Object.keys(changes).length > 0) {
+        AuditService.logAction(userId, 'UPDATE', 'Medicine', id, changes)
+      }
+    }
+
     return updated
   }
 
-  static deleteMedicine(id: string): void {
+  static deleteMedicine(id: string, userId?: string): void {
     const db = getDatabase()
+    const medicine = this.getMedicineById(id)
+
     const stmt = db.prepare('DELETE FROM medicines WHERE id = ?')
     stmt.run(id)
+
+    // Log audit action
+    if (userId && medicine) {
+      AuditService.logAction(userId, 'DELETE', 'Medicine', id, {
+        name: medicine.name,
+        quantity: medicine.quantity,
+      })
+    }
   }
 
-  static updateStock(id: string, quantity: number): Medicine {
+  static updateStock(id: string, quantity: number, userId?: string): Medicine {
     const medicine = this.getMedicineById(id)
     if (!medicine) {
       throw new Error(`Medicine with id ${id} not found`)
     }
 
-    return this.updateMedicine(id, { quantity })
+    return this.updateMedicine(id, { quantity }, userId)
   }
 
   static getLowStockMedicines(): Medicine[] {
