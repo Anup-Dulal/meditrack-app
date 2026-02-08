@@ -2,10 +2,13 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:5173",
-    "frontendDist": "../dist"
+    "devPath": "http://localhost:5173"
   },
-  "app": {
+  "package": {
+    "productName": "MediTrack",
+    "version": "1.0.0"
+  },
+  "tauri": {
     "windows": [
       {
         "title": "MediTrack",
@@ -17,13 +20,7 @@
     ],
     "security": {
       "csp": null
-    }
-  },
-  "package": {
-    "productName": "MediTrack",
-    "version": "1.0.0"
-  },
-  "tauri": {
+    },
     "allowlist": {
       "all": false,
       "shell": {
