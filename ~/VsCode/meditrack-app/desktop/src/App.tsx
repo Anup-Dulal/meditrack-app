@@ -3,6 +3,7 @@ import MainLayout from './components/Layout/MainLayout'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Sales from './pages/Sales'
+import Transactions from './pages/Transactions'
 import './App.css'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<Sales />} />
+          <Route path="/transactions" element={<Transactions />} />
         </Routes>
       </MainLayout>
     </Router>

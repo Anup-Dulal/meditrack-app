@@ -51,10 +51,14 @@ function createTables() {
     CREATE TABLE IF NOT EXISTS transactions (
       id TEXT PRIMARY KEY,
       medicineId TEXT NOT NULL,
-      quantity INTEGER,
-      totalPrice REAL,
-      date TEXT,
-      type TEXT,
+      medicineName TEXT NOT NULL,
+      quantity INTEGER NOT NULL,
+      unitPrice REAL NOT NULL,
+      totalPrice REAL NOT NULL,
+      date TEXT NOT NULL,
+      type TEXT NOT NULL,
+      paymentMethod TEXT NOT NULL,
+      notes TEXT,
       FOREIGN KEY (medicineId) REFERENCES medicines(id)
     )
   `)
