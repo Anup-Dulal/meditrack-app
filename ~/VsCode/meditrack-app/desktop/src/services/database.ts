@@ -110,6 +110,7 @@ class WebDatabase implements Database {
         id TEXT PRIMARY KEY,
         medicineId TEXT NOT NULL,
         medicineName TEXT NOT NULL,
+        customerId TEXT,
         quantity INTEGER NOT NULL,
         unitPrice REAL NOT NULL,
         totalPrice REAL NOT NULL,
@@ -117,7 +118,8 @@ class WebDatabase implements Database {
         type TEXT NOT NULL,
         paymentMethod TEXT NOT NULL,
         notes TEXT,
-        FOREIGN KEY (medicineId) REFERENCES medicines(id)
+        FOREIGN KEY (medicineId) REFERENCES medicines(id),
+        FOREIGN KEY (customerId) REFERENCES customers(id)
       )`,
       `CREATE TABLE IF NOT EXISTS audit_logs (
         id TEXT PRIMARY KEY,
@@ -135,6 +137,33 @@ class WebDatabase implements Database {
         value TEXT,
         type TEXT,
         updatedAt TEXT
+      )`,
+      `CREATE TABLE IF NOT EXISTS customers (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        phone TEXT UNIQUE,
+        address TEXT,
+        loyaltyPoints INTEGER DEFAULT 0,
+        totalSpent REAL DEFAULT 0,
+        lastPurchase TEXT,
+        createdAt TEXT,
+        updatedAt TEXT
+      )`,
+      `CREATE TABLE IF NOT EXISTS loyalty_transactions (
+        id TEXT PRIMARY KEY,
+        customerId TEXT NOT NULL,
+        points INTEGER NOT NULL,
+        reason TEXT,
+        timestamp TEXT,
+        FOREIGN KEY (customerId) REFERENCES customers(id)
+      )`,
+      `CREATE TABLE IF NOT EXISTS reports (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        period TEXT NOT NULL,
+        data TEXT NOT NULL,
+        generatedAt TEXT
       )`,
     ]
 
